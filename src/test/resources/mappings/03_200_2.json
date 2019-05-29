@@ -12,6 +12,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "fixedDelayMilliseconds" : 7000
+    "fixedDelayMilliseconds" : 2500
   }
 }
