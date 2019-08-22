@@ -4,6 +4,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.rgs.csvparser.entity.Client;
+import ru.rgs.csvparser.entity.Scoring;
 import ru.rgs.csvparser.controller.ControllerScore;
 //import ru.rgs.csvparser.controller.ControllerCsv;
 
@@ -39,40 +41,30 @@ public class CsvParserServiceImpl implements CsvParserService {
             }
             Files.write(output, Arrays.asList(outputHeader));
             while (scanner.hasNextLine()) {
-                log.info("------- cycle");
                 String[] words = scanner.nextLine().toUpperCase().split(",");
                 String clientName = words[0] + " " + words[2] + " " + words[1];
                 String contractDate = words[3];
-                HashMap<String, String> request = new HashMap<>();
-                request.put("clientName", clientName);
-                request.put("contractDate", contractDate);
 
-                HashMap response = controllerScore.score(request);
+                Client client = new Client(clientName, contractDate);
+                Scoring response = controllerScore.getScore(client);
 
-//                System.out.printf("-----------------------\n");
-//                for (Map.Entry<String, String> s: response.entrySet()) {
-//                    System.out.printf("%s : %s\n", s.getKey(), s.getValue());
-//                }
-//                System.out.printf("-----------------------\n");
+                System.out.println("----------\n" + response.toString() + "\n----------");
+
+
                 String str = new String();
-                if (response.get("status").equals("COMPLETED")) {
-                    Object scoringValue = response.get("scoringValue");
-                    str = clientName + "," + contractDate + "," + scoringValue.toString();
+                if (response.getStatus().equals("COMPLETED")) {
+                    str = clientName + "," + contractDate + "," +
+                            Double.parseDouble(response.getScoringValue());
                 }
-                else if (response.get("status").equals("NOT_FAILED")) {
-                    Object scoringValue = 0;
-                    str = clientName + "," + contractDate + "," + scoringValue.toString();
+                else if (response.getStatus().equals("NOT_FOUND")) {
+                    str = clientName + "," + contractDate + ",не найден";
                 }
-                else if (response.get("status").equals("FAILED")) {
-                    Object scoringValue = "ошибка обработки";
-                    str = clientName + "," + contractDate + "," + scoringValue.toString();
+                else if (response.getStatus().equals("FAILED")) {
+                    str = clientName + "," + contractDate + "," +
+                            response.getDescription();
                 }
-
-
 
                 Files.write(output, Arrays.asList(str), optionsAdd);
-
-
 
             }
         }

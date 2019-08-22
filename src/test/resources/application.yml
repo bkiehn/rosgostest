@@ -14,3 +14,7 @@ hystrix:
                 isolation:
                     thread:
                         timeoutInMilliseconds: 4000
+
+feign:
+    hystrix:
+        enabled: true
