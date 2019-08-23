@@ -16,5 +16,10 @@ hystrix:
                         timeoutInMilliseconds: 4000
 
 feign:
+    client:
+        config:
+            default:
+                readTimeout: 10000
     hystrix:
         enabled: true
+        ignoreException: com.jayway.awaitility.core.ConditionTimeoutException

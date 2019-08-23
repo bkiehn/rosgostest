@@ -1,6 +1,8 @@
 package ru.rgs.csvparser.controller;
 
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.ribbon.proxy.annotation.Hystrix;
 import feign.Headers;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.MediaType;
@@ -12,6 +14,7 @@ import ru.rgs.csvparser.entity.Scoring;
         fallback = ControllerScoreFallback.class)
 public interface ControllerScore {
 
+    @HystrixCommand(ignoreExceptions = com.jayway.awaitility.core.ConditionTimeoutException.class)
     @RequestMapping(method = RequestMethod.POST, path = "/score", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Headers("Contetnt-Type: application/json")
     public Scoring getScore(@RequestBody Client client);
