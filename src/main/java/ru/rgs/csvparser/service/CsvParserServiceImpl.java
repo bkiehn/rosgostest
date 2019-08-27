@@ -4,10 +4,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.rgs.csvparser.MultiThread.Store;
+import ru.rgs.csvparser.MultiThread.Task;
 import ru.rgs.csvparser.entity.Client;
 import ru.rgs.csvparser.entity.Scoring;
-import ru.rgs.csvparser.controller.ControllerScore;
-//import ru.rgs.csvparser.controller.ControllerCsv;
+import ru.rgs.csvparser.feign.RequestMockServer;
+//import ru.rgs.csvparser.feign.ControllerCsv;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -23,13 +25,16 @@ import static java.nio.file.StandardOpenOption.APPEND;
 public class CsvParserServiceImpl implements CsvParserService {
 
     @Autowired
-    ControllerScore controllerScore;
+    RequestMockServer requestMockServer;
+
+    @Autowired
+    Store store;
 
     private static final String inputHeader = "FIRST_NAME,LAST_NAME,MIDDLE_NAME,CONTRACT_DATE";
     private static final String outputHeader = "CLIENT_NAME,CONTRACT_DATE,SCORING";
     private static final String statusCompleted = "COMPLETED";
     private static final String statusNotFound = "NOT_FOUND";
-    private static final String ststusFailed = "FAILED";
+    public static final String statusFailed = "FAILED";
 
     OpenOption[] optionsAdd = new OpenOption[]{APPEND};
 
@@ -44,37 +49,57 @@ public class CsvParserServiceImpl implements CsvParserService {
                 Files.createDirectory(output.getParent());
             }
             Files.write(output, Arrays.asList(outputHeader));
+
+            int id = 0;
+            ArrayList<Thread> threads = new ArrayList<>();
             while (scanner.hasNextLine()) {
                 String[] words = scanner.nextLine().toUpperCase().split(",");
                 String clientName = words[0] + " " + words[2] + " " + words[1];
                 String contractDate = words[3];
-
                 Client client = new Client(clientName, contractDate);
-                Scoring scoring = controllerScore.getScore(client);
 
-                System.out.println("----------\n" + scoring.toString() + "\n----------");
+                threads.add(new Thread(new Task(client, requestMockServer, store,
+                        id, contractDate)));
+                id++;
 
-                String stringForCsv = formatForCsv(clientName, contractDate, scoring);
+            }
+
+            treadsToJob(threads);
+            store.sortById();
+
+            for (Scoring s : store.scorings) {
+                String stringForCsv = formatForCsv(s);
                 Files.write(output, Arrays.asList(stringForCsv), optionsAdd);
             }
+
         }
         return (output);
     }
 
-    public String formatForCsv(String clientName, String contractDate, Scoring scoring) {
+    public String formatForCsv(Scoring scoring) {
         String str = new String();
         if (scoring.getStatus().equals(statusCompleted)) {
-            str = clientName + "," + contractDate + "," +
+            str = scoring.getNameClient() + "," + scoring.getContractDate() + "," +
                     Double.parseDouble(scoring.getScoringValue());
-        }
-        else if (scoring.getStatus().equals(statusNotFound)) {
-            str = clientName + "," + contractDate + ",не найден";
-        }
-        else if (scoring.getStatus().equals(ststusFailed)) {
-            str = clientName + "," + contractDate + "," +
+        } else if (scoring.getStatus().equals(statusNotFound)) {
+            str = scoring.getNameClient() + "," + scoring.getContractDate() + ",не найден";
+        } else if (scoring.getStatus().equals(statusFailed)) {
+            str = scoring.getNameClient() + "," + scoring.getContractDate() + "," +
                     scoring.getDescription();
         }
         return str;
+    }
+
+    @SneakyThrows
+    private void treadsToJob(ArrayList<Thread> threads) {
+
+        for (Thread t : threads) {
+            t.start();
+        }
+
+        for (Thread t : threads) {
+            t.join();
+        }
     }
 
 }
