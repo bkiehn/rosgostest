@@ -10,7 +10,6 @@ public class ClientConfiguration {
 
     @Bean
     public ErrorDecoder errorDecoder() {
-        return  new CustomErrorDecoder();
+        return new CustomErrorDecoder();
     }
 }
-

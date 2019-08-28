@@ -17,14 +17,3 @@ public interface RequestMockServer {
     public Scoring getScore(@RequestBody Client client);
 
 }
-
-
-
-//@FeignClient(name = "external")
-//public interface ControllerScore {
-//
-//    @RequestMapping(method = RequestMethod.POST, path = "/score", consumes = MediaType.APPLICATION_JSON_VALUE)
-//    @Headers("Contetnt-Type: application/json")
-//    public Scoring getScore(@RequestBody Client client);
-//
-//}

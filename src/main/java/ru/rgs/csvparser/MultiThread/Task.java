@@ -1,19 +1,20 @@
 package ru.rgs.csvparser.MultiThread;
 
-import com.github.tomakehurst.wiremock.admin.NotFoundException;
+import ru.rgs.csvparser.Exception.NotFoundException;
+import ru.rgs.csvparser.entity.Store;
 import ru.rgs.csvparser.feign.RequestMockServer;
 import ru.rgs.csvparser.entity.Client;
 import ru.rgs.csvparser.entity.Scoring;
 
 import static ru.rgs.csvparser.service.CsvParserServiceImpl.statusFailed;
 
-public class Task implements  Runnable{
+public class Task implements Runnable {
 
-    private Client              client;
-    private RequestMockServer   requestMockServer;
-    private Store               store;
-    private Integer             id;
-    private String              contractDate;
+    private Client client;
+    private RequestMockServer requestMockServer;
+    private Store store;
+    private Integer id;
+    private String contractDate;
 
     public Task(Client client, RequestMockServer requestMockServer, Store store,
                 Integer id, String contractDate) {
@@ -41,7 +42,6 @@ public class Task implements  Runnable{
         scoring.setNameClient(client.getClientName());
         scoring.setContractDate(contractDate);
         store.push(scoring);
-        System.out.println("\n---------\n" + scoring.toString() + "\n---------\n");
     }
 
 }

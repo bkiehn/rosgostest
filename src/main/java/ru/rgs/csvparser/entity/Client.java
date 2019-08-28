@@ -6,10 +6,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Client {
-    String  clientName;
-    String  contractDate;
+    String clientName;
+    String contractDate;
 
-    public Client(){
+    public Client() {
 
     }
 

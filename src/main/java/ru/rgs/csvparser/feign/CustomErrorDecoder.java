@@ -1,8 +1,8 @@
 package ru.rgs.csvparser.feign;
 
-import com.github.tomakehurst.wiremock.admin.NotFoundException;
 import feign.Response;
 import feign.codec.ErrorDecoder;
+import ru.rgs.csvparser.Exception.NotFoundException;
 
 public class CustomErrorDecoder implements ErrorDecoder {
 
@@ -10,7 +10,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
     public Exception decode(String methodKey, Response response) {
 
         if (response.status() == 500) {
-            return new NotFoundException("ошибка");
+            return new NotFoundException();
         }
         return new Exception("Zdarova");
     }

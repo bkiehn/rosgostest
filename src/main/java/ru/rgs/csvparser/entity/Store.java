@@ -1,8 +1,6 @@
-package ru.rgs.csvparser.MultiThread;
+package ru.rgs.csvparser.entity;
 
 import org.springframework.stereotype.Component;
-import ru.rgs.csvparser.entity.Client;
-import ru.rgs.csvparser.entity.Scoring;
 
 import java.util.Collections;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,6 +24,10 @@ public class Store {
 
     public void sortById() {
         Collections.sort(scorings);
+    }
+
+    public void clean() {
+        scorings.removeAll(scorings);
     }
 
 }

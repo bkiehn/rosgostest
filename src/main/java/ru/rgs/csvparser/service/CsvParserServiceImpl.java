@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.rgs.csvparser.MultiThread.Store;
+import ru.rgs.csvparser.entity.Store;
 import ru.rgs.csvparser.MultiThread.Task;
 import ru.rgs.csvparser.entity.Client;
 import ru.rgs.csvparser.entity.Scoring;
@@ -20,7 +20,6 @@ import java.util.*;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 
-@Service
 @Slf4j
 public class CsvParserServiceImpl implements CsvParserService {
 
@@ -52,6 +51,7 @@ public class CsvParserServiceImpl implements CsvParserService {
 
             int id = 0;
             ArrayList<Thread> threads = new ArrayList<>();
+
             while (scanner.hasNextLine()) {
                 String[] words = scanner.nextLine().toUpperCase().split(",");
                 String clientName = words[0] + " " + words[2] + " " + words[1];
@@ -66,12 +66,8 @@ public class CsvParserServiceImpl implements CsvParserService {
 
             treadsToJob(threads);
             store.sortById();
-
-            for (Scoring s : store.scorings) {
-                String stringForCsv = formatForCsv(s);
-                Files.write(output, Arrays.asList(stringForCsv), optionsAdd);
-            }
-
+            writeToFile(output);
+            store.clean();
         }
         return (output);
     }
@@ -99,6 +95,14 @@ public class CsvParserServiceImpl implements CsvParserService {
 
         for (Thread t : threads) {
             t.join();
+        }
+    }
+
+    @SneakyThrows
+    public void writeToFile(Path output) {
+        for (Scoring s : store.scorings) {
+            String stringForCsv = formatForCsv(s);
+            Files.write(output, Arrays.asList(stringForCsv), optionsAdd);
         }
     }
 
